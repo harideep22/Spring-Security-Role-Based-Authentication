@@ -21,12 +21,28 @@ public class CustomerUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // Assuming employeeRepository.findByEmployeeName returns an Optional<Employee>
-        Optional<Employee> userInfo = employeeRepository.findByEmployeeName(username);
+        try {
+            // Assuming employeeRepository.findByEmployeeName returns an Optional<Employee>
+            Optional<Employee> userInfo = employeeRepository.findByEmployeeName(username);
 
-        // Using map to convert Employee to UserInfoUserDetails, or throw an exception if not found
-        return userInfo.map(UserInfoUserDetails::new)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+            // Check if the result is present
+            if (userInfo.isPresent()) {
+                // Transform Employee to UserInfoUserDetails manually
+                Employee employee = userInfo.get();
+                UserInfoUserDetails userDetails = new UserInfoUserDetails(employee);
+
+                return userDetails;
+            } else {
+                // Throw an exception if the user is not found
+                throw new UsernameNotFoundException("User not found: " + username);
+            }
+        } catch (Exception e) {
+            // Handle any other exceptions that might occur
+            throw new RuntimeException("Error retrieving user information", e);
+        }
     }
 
+
 }
+
+
